@@ -29,6 +29,16 @@ class MarvelService {
     return desc
   }
 
+  validComics = (comics) => {
+    if (comics.length === 0) {
+      return "There are no comics with this character yet."
+    }
+    if (comics.length > 10) {
+      return comics.slice(0, 10);
+    }
+    return comics
+  }
+
   getAllCharacters = async () => {
     const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=228&${this._apiKey}`);
     return res.data.results.map(this._transformCharacter)
@@ -41,6 +51,7 @@ class MarvelService {
 
   _transformCharacter = (char) => {
     return {
+      id: char.id,
       name: char.name,
       //description: char.description,
       //description: char.description ? `${char.description.substring(0, 200)}...` : "There is no description for this person",
@@ -48,6 +59,7 @@ class MarvelService {
       thumbnail: `${char.thumbnail.path}.${char.thumbnail.extension}`,
       homepage: char.urls[0].url,
       wiki: char.urls[1].url,
+      comics: this.validComics(char.comics.items),
     };
   }
 }

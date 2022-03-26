@@ -7,35 +7,32 @@ import './charList.scss';
 //import abyss from '../../resources/img/abyss.jpg';
 
 class CharList extends Component {
-
+  
   state = {
     chars: [],
     loading: true,
-    error: false
+    error: false, 
   };
   marvelService = new MarvelService();
 
   componentDidMount() {
     this.updateChars();
   }
-
+  
   updateChars = () => {
-    this.marvelService
-      .getAllCharacters()
-      .then(this.tranformArrayChars)
-      .catch(this.onError)
-  } 
+    this.setState({loading: true, error: false});
 
-  tranformArrayChars = (arrChars) => {
-    const chars = arrChars.map(( {name, thumbnail}, index) => {
-      return (
-        <li key={index} className="char__item char__item">
-          <img src={thumbnail} style={{objectFit: `${thumbnail.includes('image_not_available') ? 'contain' : 'cover'}`}} alt={`character ${index + 1}`}/>
-          <div className="char__name">{name}</div>
-        </li>
-      );
-    });
-    this.onCharLoaded(chars)
+    this.marvelService
+    .getAllCharacters()
+    .then(this.onCharLoaded)
+    .catch(this.onError)
+  }
+  
+  onCharLoaded = (chars) => {
+    this.setState({
+      chars,
+      loading: false,
+    })
   }
 
   onError = (e) => {
@@ -45,19 +42,31 @@ class CharList extends Component {
       error: true
     });
   }
+  
+  tranformArrayChars = (arrChars) => {
+    const chars = arrChars.map(( {name, thumbnail, id} ) => {
+      const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') || thumbnail.includes('4c002e0305708') ? 'unset' : 'cover'}`};
+      
+      const active = this.props.activeId === id;
+      const clazz = active ? 'char__item_selected' : '';
 
-  onCharLoaded = (chars) => {
-    this.setState({
-      chars,
-      loading: false,
-    })
+      return (
+        <li onClick={() => this.props.getId(id)} key={id} className={`char__item ${clazz}`}>
+          <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
+          <div className="char__name">{name}</div>
+        </li>
+      );
+    });
+    return chars;
   }
 
   render() {
     const {chars, loading, error} = this.state;
+    
+    const items = this.tranformArrayChars(chars)
     const errorMessage = error ? <ErrorMessage/> : null;
     const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error) ? chars : null
+    const content = !(loading || error) ? items : null
 
     return (
       <div className="char__list">
@@ -77,14 +86,6 @@ class CharList extends Component {
 export default CharList;
 
 /*
-import { Component } from 'react'
-import MarvelService from '../../services/MarvelService';
-import Spinner from '../spinner/Spinner'
-import ErrorMessage from '../errorMessage/ErrorMessage'
-
-import './charList.scss';
-//import abyss from '../../resources/img/abyss.jpg';
-
 class CharList extends Component {
 
   state = {
@@ -107,7 +108,7 @@ class CharList extends Component {
   } 
 
   tranformArrayChars = (arrChars) => {
-    const chars = arrChars.map(({name, thumbnail}, index) => ({name, thumbnail, index}))
+    const chars = arrChars.map(({name, thumbnail, id}) => ({name, thumbnail, id}))
     this.onCharLoaded(chars)
   }
 
@@ -148,10 +149,11 @@ class CharList extends Component {
 }
 
 const View = ({chars}) => {
-  return chars.map(( {name, thumbnail}, index) => {
+  return chars.map(( {name, thumbnail, id} )=> {
+    const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') ? 'unset' : 'cover'}`};
     return (
-      <li key={index} className="char__item char__item">
-        <img src={thumbnail} style={{objectFit: `${thumbnail.includes('image_not_available') ? 'contain' : 'cover'}`}} alt={`character ${index + 1}`}/>
+      <li key={id} className="char__item">
+        <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
         <div className="char__name">{name}</div>
       </li>
     )
@@ -159,4 +161,4 @@ const View = ({chars}) => {
 };
 
 export default CharList;
-*/ 
+*/
