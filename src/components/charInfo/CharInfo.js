@@ -16,15 +16,12 @@ class CharInfo extends Component {
   marvelService = new MarvelService();
 
   componentDidMount() {
-    console.log('mount');
     this.updateChar();
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    console.log('update');
+  componentDidUpdate(prevProps) {
     if (this.props.charId !== prevProps.charId) {
       this.updateChar();
-      console.log('update22');
     }
   }
 
@@ -56,15 +53,12 @@ class CharInfo extends Component {
   }
 
   render() {
-    console.log('render');
     const {char, loading, error} = this.state;
 
     const skeleton = !(loading || error || char) ? <Skeleton/> : null;
     const spinner = loading ? <Spinner/> : null;
     const errorMessage = error ? <ErrorMessage/> : null;
     const content = !(loading || error || !char) ? <View char={char}/> : null;
-
-    console.log(char);
 
     return (
       <div className="char__info">
