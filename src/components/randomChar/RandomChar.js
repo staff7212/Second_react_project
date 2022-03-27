@@ -18,13 +18,8 @@ class RandomChar extends Component {
   marvelService = new MarvelService();
 
   componentDidMount() {
-    //console.log('mount');
     this.updateChar();
   }
-
-  // componentDidUpdate() {
-  //   console.log('update');
-  // }
   
   updateChar = () => {
     this.setState({loading: true, error: false});
@@ -53,7 +48,6 @@ class RandomChar extends Component {
   }
 
   render() {
-    //console.log('render');
     const {char, loading, error} = this.state;
 
     const errorMessage = error ? <ErrorMessage/> : null;
