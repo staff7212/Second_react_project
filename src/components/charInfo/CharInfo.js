@@ -1,4 +1,6 @@
 import { Component } from 'react'
+import PropTypes from 'prop-types';
+
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner'
 import ErrorMessage from '../errorMessage/ErrorMessage'
@@ -75,7 +77,6 @@ const View = ({char}) => {
   const {name, description, thumbnail, homepage, wiki, comics} = char
 
   const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') || thumbnail.includes('4c002e0305708') ? 'unset' : 'cover'}`};
-
   return (
     <>
       <div className="char__basics">
@@ -95,6 +96,7 @@ const View = ({char}) => {
       <div className="char__descr">{description}</div>
       <div className="char__comics">Comics:</div>
       <ul className="char__comics-list">
+        {comics.length === 0 ? 'There are no comics with this character yet.' : null}
         {
           comics.map((item, index) => {
             return (
@@ -111,6 +113,10 @@ const View = ({char}) => {
       </ul>
     </>
   )
+}
+
+CharInfo.propTypes = {
+  charId: PropTypes.number,
 }
 
 export default CharInfo;

@@ -1,4 +1,7 @@
-import { Component } from 'react'
+import React, { Component } from 'react'
+import PropTypes from 'prop-types';
+
+
 import MarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner'
 import ErrorMessage from '../errorMessage/ErrorMessage'
@@ -13,7 +16,7 @@ class CharList extends Component {
     loading: true,
     error: false,
     newItemLoading: false,
-    offset: 1540,
+    offset: 228,
     charEnded: false,
   };
 
@@ -61,16 +64,51 @@ class CharList extends Component {
       error: true
     });
   }
+
+  itemRefs = [];
+
+  setRef = (ref) => {
+    this.itemRefs.push(ref)
+  }
+
+  focusItem = (id) => {
+    this.itemRefs.forEach(item => {
+      item.classList.remove('char__item_selected')
+    })
+    this.itemRefs[id].classList.add('char__item_selected')
+    this.itemRefs[id].focus();
+  }
+
+  setFocus = () => {
+    this.itemRefs[this.itemRefs.length - 1].focus();
+  }
   
   tranformArrayChars = (arrChars) => {
-    const chars = arrChars.map(( {name, thumbnail, id} ) => {
+    const chars = arrChars.map(( {name, thumbnail, id}, index ) => {
       const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') || thumbnail.includes('4c002e0305708') ? 'unset' : 'cover'}`};
       
-      const active = this.props.activeId === id;
-      const clazz = active ? 'char__item_selected' : '';
+      //const active = this.props.activeId === id;
+      //const clazz = active ? 'char__item_selected' : '';
+
+      //className={`char__item ${clazz}`}>
 
       return (
-        <li onClick={() => this.props.getId(id)} key={id} className={`char__item ${clazz}`}>
+        <li 
+        onClick={() => {
+          this.props.getId(id)
+          this.focusItem(index)
+        }} 
+        onKeyDown={(e) => {
+          if (e.key === ' ' || e.key === 'Enter') {
+            e.preventDefault();
+            this.props.getId(id)
+            this.focusItem(index)
+          }
+        }}
+        key={id}
+        ref={this.setRef}
+        tabIndex={'0'}
+        className={`char__item`}>
           <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
           <div className="char__name">{name}</div>
         </li>
@@ -98,12 +136,19 @@ class CharList extends Component {
           className="button button__main button__long"
           disabled={newItemLoading}
           style={{display: charEnded ? 'none' : 'block'}}
-          onClick={() => this.onRequest(offset)}>
+          onClick={() => {
+            this.onRequest(offset);
+            this.setFocus();
+          }}>
           <div className="inner">load more</div>
         </button>
       </div>
     )
   }
+}
+
+CharList.propTypes = {
+  getId: PropTypes.func.isRequired,
 }
 
 export default CharList;

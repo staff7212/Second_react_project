@@ -33,12 +33,12 @@ class MarvelService {
 
   validComics = (comics) => {
     if (comics.length === 0) {
-      return "There are no comics with this character yet."
+      return [];
     }
     if (comics.length > 10) {
       return comics.slice(0, 10);
     }
-    return comics
+    return comics;
   }
 
   getAllCharacters = async (offset = this._baseOffset) => {
