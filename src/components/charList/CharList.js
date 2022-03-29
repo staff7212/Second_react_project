@@ -7,7 +7,6 @@ import Spinner from '../spinner/Spinner'
 import ErrorMessage from '../errorMessage/ErrorMessage'
 
 import './charList.scss';
-//import abyss from '../../resources/img/abyss.jpg';
 
 class CharList extends Component {
   
@@ -152,81 +151,3 @@ CharList.propTypes = {
 }
 
 export default CharList;
-
-/*
-class CharList extends Component {
-
-  state = {
-    chars: [],
-    loading: true,
-    error: false
-  };
-  marvelService = new MarvelService();
-
-  componentDidMount() {
-    this.updateChars();
-  }
-
-  updateChars = () => {
-    this.setState({loading: true, error: false});
-    this.marvelService
-      .getAllCharacters()
-      .then(this.tranformArrayChars)
-      .catch(this.onError)
-  } 
-
-  tranformArrayChars = (arrChars) => {
-    const chars = arrChars.map(({name, thumbnail, id}) => ({name, thumbnail, id}))
-    this.onCharLoaded(chars)
-  }
-
-  onError = (e) => {
-    console.log(e);
-    this.setState({
-      loading: false,
-      error: true
-    });
-  }
-
-  onCharLoaded = (chars) => {
-    this.setState({
-      chars,
-      loading: false,
-    })
-  }
-
-  render() {
-    const {chars, loading, error} = this.state;
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error) ? <View chars={chars}/> : null
-
-    return (
-      <div className="char__list">
-        {errorMessage}
-        {spinner}
-        <ul className="char__grid">
-        {content}
-        </ul>
-        <button className="button button__main button__long">
-          <div className="inner">load more</div>
-        </button>
-      </div>
-    )
-  }
-}
-
-const View = ({chars}) => {
-  return chars.map(( {name, thumbnail, id} )=> {
-    const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') ? 'unset' : 'cover'}`};
-    return (
-      <li key={id} className="char__item">
-        <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
-        <div className="char__name">{name}</div>
-      </li>
-    )
-  })
-};
-
-export default CharList;
-*/
