@@ -10,12 +10,12 @@ const useMarvelService = () => {
   const getAllCharacters = async (offset = _baseOffset) => {
     const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`);
     return res.data.results.map(_transformCharacter)
-  }
+  };
 
   const getCharacter = async (id) => {
     const res = await request(`${_apiBase}characters/${id}?${_apiKey}`);
     return _transformCharacter(res.data.results[0]);
-  }
+  };
 
   const _transformCharacter = (char) => {
     return {
@@ -29,7 +29,7 @@ const useMarvelService = () => {
       wiki: char.urls[1].url,
       comics: _validComics(char.comics.items),
     };
-  }
+  };
 
   // валидация описания, можно и через тернарный, но '...' подставляется всегда
   // можно через CSS к блоку с описанием
@@ -47,7 +47,7 @@ const useMarvelService = () => {
       return `${desc.substring(0, 210)}...`
     }
     return desc
-  }
+  };
 
   const _validComics = (comics) => {
     if (comics.length === 0) {
@@ -57,9 +57,28 @@ const useMarvelService = () => {
       return comics.slice(0, 10);
     }
     return comics;
+  };
+
+  const getAllComics = async (offset = _baseOffset) => {
+    const res = await request(`${_apiBase}comics?orderBy=issueNumber&limit=8&offset=${offset}&${_apiKey}`);
+    return res.data.results.map(_transformComics);
+  };
+
+  const getComics = async (id) => {
+    const res = await request(`${_apiBase}comics/${id}?${_apiKey}`);
+    return _transformComics(res.data.results[0]);
+  };
+
+  const _transformComics = (comics) => {
+    return {
+      id: comics.id,
+      title: comics.title,
+      price: comics.prices[0].price,
+      thumbnail: `${comics.thumbnail.path}.${comics.thumbnail.extension}`,
+    }
   }
 
-  return {loading, error, getCharacter, getAllCharacters, clearError}
+  return {loading, error, getCharacter, getAllCharacters, getAllComics, clearError}
 }
 
 export default useMarvelService;
