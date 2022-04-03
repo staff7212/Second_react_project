@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types';
 
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner'
 import ErrorMessage from '../errorMessage/ErrorMessage'
 
@@ -11,30 +11,22 @@ import './charList.scss';
 const CharList = (props) => {
 
   const [chars, setChars] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [newItemLoading, setNewItemLoading] = useState(false);
   const [offset, setOffset] = useState(228);
   const [charEnded, setCharEnded] = useState(false);
 
-  const marvelService = new MarvelService();
+  const {loading, error, getAllCharacters, clearError}  = useMarvelService();
 
   useEffect(() => {
-    onRequest();
+    onRequest(offset, true);
   }, [])
   
-  const onRequest = (offset) => {
-    onCharListLoading();
+  const onRequest = (offset, initial) => {
+    clearError();
+    initial ? setNewItemLoading(false) : setNewItemLoading(true)
 
-    marvelService
-    .getAllCharacters(offset)
+    getAllCharacters(offset)
     .then(onCharLoaded)
-    .catch(onError);
-  };
-
-  const onCharListLoading = () => {
-    setError(false);
-    setNewItemLoading(true);
   };
   
   const onCharLoaded = (newChars) => {
@@ -44,17 +36,10 @@ const CharList = (props) => {
     }
 
     setChars(chars => [...chars, ...newChars]);
-    setLoading(false);
     setNewItemLoading(false);
     setOffset(offset => offset + 9);
     setCharEnded(ended);
   };
-
-  const onError = (e) => {
-    console.log(e);
-    setLoading(false);
-    setError(true);
-  }
 
   const itemRefs = useRef([]);
 
@@ -72,7 +57,7 @@ const CharList = (props) => {
   
   const tranformArrayChars = (arrChars) => {
     const chars = arrChars.map(( {name, thumbnail, id}, index ) => {
-      const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') || thumbnail.includes('4c002e0305708') ? 'unset' : 'cover'}`};
+      const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') || thumbnail?.includes('4c002e0305708') ? 'unset' : 'cover'}`};
       
       //const active = this.props.activeId === id;
       //const clazz = active ? 'char__item_selected' : '';
@@ -101,21 +86,22 @@ const CharList = (props) => {
         </li>
       );
     });
-    return chars;
+    return (
+      <ul className="char__grid">
+        {chars}
+      </ul>
+    )
   }
  
   const items = tranformArrayChars(chars)
   const errorMessage = error ? <ErrorMessage/> : null;
-  const spinner = loading ? <Spinner/> : null;
-  const content = !(loading || error) ? items : null
-
+  const spinner = loading && !newItemLoading ? <Spinner/> : null;
+  const content = error ? null : items
   return (
     <div className="char__list">
       {errorMessage}
       {spinner}
-      <ul className="char__grid">
       {content}
-      </ul>
       <button 
         className="button button__main button__long"
         disabled={newItemLoading}

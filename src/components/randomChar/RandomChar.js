@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage'
 
@@ -9,41 +9,34 @@ import mjolnir from '../../resources/img/mjolnir.png';
 const RandomChar = () => {
 
   const [char, setChar] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  const marvelService = new MarvelService();
+  const {loading, error, getCharacter, clearError} = useMarvelService();
 
   useEffect(() => {
     updateChar();
+    // автоматическое переключение персонажей
+    // const timerId = setInterval(updateChar, 60000);
+
+    // return () => {
+    //     clearInterval(timerId)
+    // }
   }, [])
   
   const updateChar = () => {
-    setLoading(true);
-    setError(false);
+    clearError();
 
     const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000)
-    
-    marvelService
-      .getCharacter(id)
+
+    getCharacter(id)
       .then(onCharLoaded)
-      .catch(onError)
   }
 
   const onCharLoaded = (char) => {
     setChar(char);
-    setLoading(false);
-  }
-
-  const onError = (err) => {
-    console.log(err);
-    setLoading(false);
-    setError(true);
   }
 
   const errorMessage = error ? <ErrorMessage/> : null;
   const spinner = loading ? <Spinner/> : null;
-  const content = !(loading || error) ? <View char={char}/> : null
+  const content = !(loading || error || !char) ? <View char={char} /> : null;
 
   return (
     <div className="randomchar">
@@ -70,7 +63,7 @@ const RandomChar = () => {
 const View = ({char}) => {
   const {name, description, thumbnail, homepage, wiki} = char;
 
-  const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') ? 'unset' : 'cover'}`};
+  const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') ? 'unset' : 'cover'}`};
 
   return (
     <div className="randomchar__block">

@@ -1,28 +1,45 @@
+import useHttp from "../hooks/http.hook";
 
-class MarvelService {
-  _apiBase = 'https://gateway.marvel.com:443/v1/public/';
-  _apiKey = 'apikey=a98ec362bdd90ae8d5d093393fe03dd8';
-  _baseOffset = 228;
+const useMarvelService = () => {
+  const {loading, error, request, clearError} = useHttp();
 
+  const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
+  const _apiKey = 'apikey=a98ec362bdd90ae8d5d093393fe03dd8';
+  const _baseOffset = 228;
 
-  getResource = async (url) => {
-    const res = await fetch(url);
+  const getAllCharacters = async (offset = _baseOffset) => {
+    const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apiKey}`);
+    return res.data.results.map(_transformCharacter)
+  }
 
-    if (!res.ok) {
-      throw new Error(`Could not fetch ${url}, status ${res.status}`)
-    }
+  const getCharacter = async (id) => {
+    const res = await request(`${_apiBase}characters/${id}?${_apiKey}`);
+    return _transformCharacter(res.data.results[0]);
+  }
 
-    return await res.json();
-  };
+  const _transformCharacter = (char) => {
+    return {
+      id: char.id,
+      name: char.name,
+      //description: char.description,
+      //description: char.description ? `${char.description.substring(0, 200)}...` : "There is no description for this person",
+      description: _validDescription(char.description),
+      thumbnail: `${char.thumbnail.path}.${char.thumbnail.extension}`,
+      homepage: char.urls[0].url,
+      wiki: char.urls[1].url,
+      comics: _validComics(char.comics.items),
+    };
+  }
 
-  // валидация описания, можно и через тернарный, но ... подставляется всегда
-  // можно через CSS
+  // валидация описания, можно и через тернарный, но '...' подставляется всегда
+  // можно через CSS к блоку с описанием
   // display: -webkit-box;
   // -webkit-box-orient: vertical;
   // -webkit-line-clamp: 5;
   // overflow: hidden;
   // height: 90px;
-  validDescription = (desc) => {
+
+  const _validDescription = (desc) => {
     if (desc.length === 0) {
       return "There is no description for this person. We apologize to you. Go to Wiki."
     }
@@ -32,7 +49,7 @@ class MarvelService {
     return desc
   }
 
-  validComics = (comics) => {
+  const _validComics = (comics) => {
     if (comics.length === 0) {
       return [];
     }
@@ -42,30 +59,7 @@ class MarvelService {
     return comics;
   }
 
-  getAllCharacters = async (offset = this._baseOffset) => {
-    const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apiKey}`);
-    return res.data.results.map(this._transformCharacter)
-  }
-
-  getCharacter = async (id) => {
-    const res = await this.getResource(`${this._apiBase}characters/${id}?${this._apiKey}`);
-    return this._transformCharacter(res.data.results[0]);
-  }
-
-  _transformCharacter = (char) => {
-    return {
-      id: char.id,
-      name: char.name,
-      //description: char.description,
-      //description: char.description ? `${char.description.substring(0, 200)}...` : "There is no description for this person",
-      description: this.validDescription(char.description),
-      thumbnail: `${char.thumbnail.path}.${char.thumbnail.extension}`,
-      homepage: char.urls[0].url,
-      wiki: char.urls[1].url,
-      comics: this.validComics(char.comics.items),
-    };
-  }
+  return {loading, error, getCharacter, getAllCharacters, clearError}
 }
 
-
-export default MarvelService;
+export default useMarvelService;
