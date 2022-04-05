@@ -1,8 +1,10 @@
-import { useState, useEffect} from 'react'
+import { useState, useEffect} from 'react';
+import { Link } from 'react-router-dom';
+
 
 import useMarvelService from '../../services/MarvelService';
-import Spinner from '../spinner/Spinner'
-import ErrorMessage from '../errorMessage/ErrorMessage'
+import Spinner from '../spinner/Spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './comicsList.scss';
 
@@ -25,7 +27,8 @@ const ComicsList = () => {
     initial ? setNewItemLoading(false) : setNewItemLoading(true)
 
     getAllComics(offset)
-    .then(onComicsLoaded);
+    .then(onComicsLoaded)
+    .catch(e => setNewItemLoading(false))
   }
 
   const onComicsLoaded = (newComics) => {
@@ -44,11 +47,11 @@ const ComicsList = () => {
     const comics = allComics.map(({id, title, thumbnail, price}, index) => {
       return (
         <li key={index} className="comics__item">
-          <a href="#">
+          <Link to={`${id}`}>
             <img src={thumbnail} alt={`comics ${title}`} className="comics__item-img"/>
             <div className="comics__item-name">{title}</div>
-            <div className="comics__item-price">{`${price}$`}</div>
-          </a>
+            <div className="comics__item-price">{price}</div>
+          </Link>
         </li>
       )
     })
@@ -68,7 +71,7 @@ const ComicsList = () => {
         {content}
       </ul>
       <button 
-      onClick={onRequest} 
+      onClick={() => onRequest(offset)} 
       disabled={newItemLoading}
       style={{display: comicsEnded ? 'none' : 'block'}} 
       className="button button__main button__long">
