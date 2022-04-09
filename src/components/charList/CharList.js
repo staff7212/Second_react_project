@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 
 
@@ -56,40 +57,44 @@ const CharList = (props) => {
   }
   
   const tranformArrayChars = (arrChars) => {
-    const chars = arrChars.map(( {name, thumbnail, id}, index ) => {
-      const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') || thumbnail?.includes('4c002e0305708') ? 'unset' : 'cover'}`};
-      
-      //const active = this.props.activeId === id;
-      //const clazz = active ? 'char__item_selected' : '';
-
-      //className={`char__item ${clazz}`}>
-
-      return (
-        <li 
-        onClick={() => {
-          props.getId(id)
-          focusItem(index)
-        }} 
-        onKeyDown={(e) => {
-          if (e.key === ' ' || e.key === 'Enter') {
-            e.preventDefault();
-            props.getId(id)
-            focusItem(index)
-          }
-        }}
-        key={id}
-        ref={el => itemRefs.current[index] = el}
-        tabIndex={'0'}
-        className={`char__item`}>
-          <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
-          <div className="char__name">{name}</div>
-        </li>
-      );
-    });
+    
     return (
-      <ul className="char__grid">
-        {chars}
-      </ul>
+      <TransitionGroup component={'ul'} className="char__grid">
+        {arrChars.map(( {name, thumbnail, id}, index ) => {
+            const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') || thumbnail?.includes('4c002e0305708') ? 'unset' : 'cover'}`};
+            
+            //const active = this.props.activeId === id;
+            //const clazz = active ? 'char__item_selected' : '';
+      
+            //className={`char__item ${clazz}`}>
+      
+            return (
+              <CSSTransition
+                timeout={Math.round(350 + Math.random() * 1000)} 
+                key={id}
+                classNames='char__item'>
+                <li
+                  onClick={() => {
+                    props.getId(id)
+                    focusItem(index)
+                  }} 
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      props.getId(id)
+                      focusItem(index)
+                    }
+                  }}
+                  ref={el => itemRefs.current[index] = el}
+                  tabIndex={'0'}
+                  className='char__item'>
+                    <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
+                    <div className="char__name">{name}</div>
+                </li>
+              </CSSTransition>
+            );
+          })}
+      </TransitionGroup>
     )
   }
  
