@@ -2,9 +2,7 @@ import {useState, useEffect} from 'react'
 import PropTypes from 'prop-types';
 
 import useMarvelService from '../../services/MarvelService';
-import Spinner from '../spinner/Spinner'
-import ErrorMessage from '../errorMessage/ErrorMessage'
-import Skeleton from '../skeleton/Skeleton';
+import setContent from '../../utils/setContent';
 
 import './charInfo.scss';
 
@@ -12,7 +10,7 @@ const CharInfo = (props) => {
 
   const [char, setChar] = useState(null);
 
-  const {loading, error, getCharacter, clearError} = useMarvelService();
+  const {process, setProcess, getCharacter, clearError} = useMarvelService();
 
   useEffect(() => {
     updateChar();
@@ -26,29 +24,22 @@ const CharInfo = (props) => {
 
     getCharacter(charId)
       .then(onCharLoaded)
+      .then(() => setProcess('confirmed'));
   }
 
   const onCharLoaded = (char) => {
     setChar(char) 
   }
 
-  const skeleton = !(loading || error || char) ? <Skeleton/> : null;
-  const spinner = loading ? <Spinner/> : null;
-  const errorMessage = error ? <ErrorMessage/> : null;
-  const content = !(loading || error || !char) ? <View char={char}/> : null;
-
   return (
     <div className="char__info">
-      {skeleton}
-      {spinner}
-      {errorMessage}
-      {content}
+      {setContent(process, View, char)}
     </div>
   )
 }
 
-const View = ({char}) => {
-  const {name, description, thumbnail, homepage, wiki, comics} = char
+const View = ({data}) => {
+  const {name, description, thumbnail, homepage, wiki, comics} = data;
 
   const imgStyle = {objectFit: `${thumbnail.includes('image_not_available') || thumbnail.includes('4c002e0305708') ? 'unset' : 'cover'}`};
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 
@@ -9,6 +9,21 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './charList.scss';
 
+const setContent = (process, Component, newItemLoading) => {
+  switch (process) {
+    case 'waiting':
+      return <Spinner/>;
+    case 'loading':
+      return newItemLoading ? <Component/> : <Spinner/>;
+    case 'confirmed':
+      return <Component/>;
+    case 'error':
+      return <ErrorMessage/>
+    default:
+      throw new Error('Unexpented process state');
+  }
+};
+
 const CharList = (props) => {
 
   const [chars, setChars] = useState([]);
@@ -16,7 +31,7 @@ const CharList = (props) => {
   const [offset, setOffset] = useState(228);
   const [charEnded, setCharEnded] = useState(false);
 
-  const {loading, error, getAllCharacters, clearError}  = useMarvelService();
+  const {getAllCharacters, clearError, process, setProcess}  = useMarvelService();
 
   useEffect(() => {
     onRequest(offset, true);
@@ -27,7 +42,8 @@ const CharList = (props) => {
     initial ? setNewItemLoading(false) : setNewItemLoading(true)
 
     getAllCharacters(offset)
-    .then(onCharLoaded)
+      .then(onCharLoaded)
+      .then(() => setProcess('confirmed'));
   };
   
   const onCharLoaded = (newChars) => {
@@ -57,57 +73,53 @@ const CharList = (props) => {
   }
   
   const tranformArrayChars = (arrChars) => {
-    
     return (
       <TransitionGroup component={'ul'} className="char__grid">
         {arrChars.map(( {name, thumbnail, id}, index ) => {
-            const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') || thumbnail?.includes('4c002e0305708') ? 'unset' : 'cover'}`};
+          const imgStyle = {objectFit: `${thumbnail?.includes('image_not_available') || thumbnail?.includes('4c002e0305708') ? 'unset' : 'cover'}`};
             
             //const active = this.props.activeId === id;
             //const clazz = active ? 'char__item_selected' : '';
       
             //className={`char__item ${clazz}`}>
       
-            return (
-              <CSSTransition
-                timeout={Math.round(350 + Math.random() * 1000)} 
-                key={id}
-                classNames='char__item'>
-                <li
-                  onClick={() => {
+          return (
+            <CSSTransition
+              timeout={Math.round(350 + Math.random() * 1000)} 
+              key={id}
+              classNames='char__item'>
+              <li
+                onClick={() => {
+                  props.getId(id)
+                  focusItem(index)
+                }} 
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault();
                     props.getId(id)
                     focusItem(index)
-                  }} 
-                  onKeyDown={(e) => {
-                    if (e.key === ' ' || e.key === 'Enter') {
-                      e.preventDefault();
-                      props.getId(id)
-                      focusItem(index)
-                    }
-                  }}
-                  ref={el => itemRefs.current[index] = el}
-                  tabIndex={'0'}
-                  className='char__item'>
-                    <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
-                    <div className="char__name">{name}</div>
-                </li>
-              </CSSTransition>
-            );
-          })}
+                  }
+                }}
+                ref={el => itemRefs.current[index] = el}
+                tabIndex={'0'}
+                className='char__item'>
+                  <img src={thumbnail} style={imgStyle} alt={`character ${name}`}/>
+                  <div className="char__name">{name}</div>
+              </li>
+            </CSSTransition>
+          );
+        })}
       </TransitionGroup>
     )
   }
- 
-  const items = tranformArrayChars(chars)
-  const errorMessage = error ? <ErrorMessage/> : null;
-  const spinner = loading && !newItemLoading ? <Spinner/> : null;
-  const content = error ? null : items
-  
+
+  const element = useMemo(() => {
+    return setContent(process, () => tranformArrayChars(chars), newItemLoading)
+  }, [process])
+
   return (
     <div className="char__list">
-      {errorMessage}
-      {spinner}
-      {content}
+      {element}
       <button 
         className="button button__main button__long"
         disabled={newItemLoading}

@@ -11,7 +11,7 @@ import './searchPanel.scss';
 const SearchPanel = () => {
 
   const [char, setChar] = useState(null);
-  const {loading, error, getCharacterByName, clearError} = useMarvelService();
+  const {getCharacterByName, clearError, process, setProcess} = useMarvelService();
 
   const onCharLoaded = (char) => {
     setChar(char);
@@ -21,10 +21,11 @@ const SearchPanel = () => {
     clearError();
 
     getCharacterByName(charName)
-      .then(onCharLoaded);
+      .then(onCharLoaded)
+      .then(() => setProcess('confirmed'))
   };
 
-  const errorMessage = error ? <div className="char__search-critical-error"><ErrorMessage/></div> : null;
+  const errorMessage = process === 'error' ? <div className="char__search-critical-error"><ErrorMessage/></div> : null;
   const result = !char ? null : char.length > 0 ? 
             <div className='search__panel-wrapper'>
               <div className="search__panel-success">There is! Visit {char[0].name} page?</div>
@@ -55,7 +56,7 @@ const SearchPanel = () => {
           <label className='search__panel-label'>Or find a character by name:</label>
           <div className='search__panel-wrapper'>
           <Field id='charName' name='charName' type='text' placeholder='Enter name'/>
-          <button type='submit' className="button button__main" disabled={loading}>
+          <button type='submit' className="button button__main" disabled={process === 'loading'}>
             <div className="inner">find</div>
           </button>
           </div>

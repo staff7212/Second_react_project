@@ -16,7 +16,7 @@ const MainPage = () => {
   const onCharSelector = (id) => {
     setChar(id);
   }
-
+  
   return (
     <>
       <Helmet>
