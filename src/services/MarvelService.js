@@ -53,8 +53,8 @@ const useMarvelService = () => {
     if (comics.length === 0) {
       return [];
     }
-    if (comics.length > 10) {
-      return comics.slice(0, 10);
+    if (comics.length > 6) {
+      return comics.slice(0, 6);
     }
     return comics;
   };
